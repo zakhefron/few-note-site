@@ -244,9 +244,10 @@
     font-size: 11.5px; color: rgba(246,241,231,0.75); letter-spacing: 0.04em;
   }
   .cli-body { padding: 18px 20px 20px; }
-  .cli pre {
-    margin: 0; overflow-x: auto; font-family: "JetBrains Mono", monospace;
-    font-size: 13px; line-height: 1.7; white-space: pre;
+  .cli-cmd-row { display: flex; align-items: center; gap: 14px; }
+  .cli-cmd {
+    flex: 1; min-width: 0; margin: 0; overflow-x: auto;
+    font-family: "JetBrains Mono", monospace; font-size: 13px; line-height: 1.7; white-space: pre;
   }
   .cli .prompt { color: var(--amber); font-weight: 700; user-select: none; }
   .cli .cmd { color: var(--paper); }
@@ -261,7 +262,7 @@
   .cli-out div.done { color: var(--green); }
   .cli-out div.done .tl { color: var(--green); }
   .copy-btn {
-    position: absolute; top: 7px; right: 12px; z-index: 2;
+    flex-shrink: 0;
     background: var(--paper); color: var(--ink); border: none;
     padding: 4px 10px; font-size: 11px; font-weight: 700; font-family: "Space Grotesk", sans-serif;
     cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
@@ -509,7 +510,9 @@
           <span class="cli-title">sh — FewNote install</span>
         </div>
         <div class="cli-body">
-          <pre class="cli-cmd"><span class="prompt">$</span> <code><span class="cmd">curl</span> <span class="flag">-fsSL</span> <span class="cmd">https://raw.githubusercontent.com/zakhefron/few-note/main/install.sh</span> <span class="pipe">|</span> <span class="cmd">sh</span></code></pre>
+          <div class="cli-cmd-row">
+            <pre class="cli-cmd"><span class="prompt">$</span> <code><span class="cmd">curl</span> <span class="flag">-fsSL</span> <span class="cmd">https://raw.githubusercontent.com/zakhefron/few-note/main/install.sh</span> <span class="pipe">|</span> <span class="cmd">sh</span></code></pre>
+          </div>
           <div class="cli-out" aria-hidden="true">
             <div><span class="tl"></span>Cloning FewNote…</div>
             <div><span class="tl"></span>Building (a minute or two the first time)…</div>
@@ -559,7 +562,7 @@
         btn.textContent = 'Failed';
       }
     });
-    block.appendChild(btn);
+    block.querySelector('.cli-cmd-row').appendChild(btn);
   });
 </script>
 </body>
