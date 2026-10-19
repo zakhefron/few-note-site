@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FewNote — an ultra-lightweight, native macOS notepad</title>
+<meta name="description" content="FewNote is an ultra-lightweight, native macOS notepad. Open it, type, close it. Real dot-matrix text, plain .rtf files, no accounts, no analytics, no network." />
+<meta property="og:title" content="FewNote — an ultra-lightweight, native macOS notepad" />
+<meta property="og:description" content="Open it, type, close it. Real dot-matrix text, plain .rtf files, no accounts, no analytics." />
+<meta property="og:image" content="assets/hero.png" />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0b0d'/%3E%3Ccircle cx='10' cy='12' r='2' fill='%23f5a623'/%3E%3Ccircle cx='16' cy='12' r='2' fill='%23f5a623'/%3E%3Ccircle cx='22' cy='12' r='2' fill='%23f5a623'/%3E%3Ccircle cx='10' cy='20' r='2' fill='%23f5a623'/%3E%3Ccircle cx='16' cy='20' r='2' fill='%23f5a623'/%3E%3Ccircle cx='22' cy='20' r='2' fill='%23f5a623'/%3E%3C/svg%3E" />
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --bg-2: #111115;
+    --surface: #16161b;
+    --line: #23232a;
+    --text: #e8e6e1;
+    --muted: #8a8782;
+    --accent: #f5a623;
+    --accent-2: #ff7a1a;
+    --glow: 0 0 40px rgba(245, 166, 35, 0.18);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  /* dot-grid backdrop echoing the matrix */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: -1;
+    background-image: radial-gradient(rgba(245,166,35,0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(10,10,12,0.7);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.01em; }
+  .logo-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--bg-2); border: 1px solid var(--line); display: grid; grid-template-columns: repeat(3,1fr); gap: 3px; padding: 5px; }
+  .logo-mark span { background: var(--accent); border-radius: 50%; opacity: 0.9; }
+  .nav-cta {
+    background: var(--accent); color: #0a0a0c; font-weight: 600; font-size: 14px;
+    padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .nav-cta:hover { transform: translateY(-1px); box-shadow: var(--glow); text-decoration: none; }
+
+  .hero { padding: 96px 0 64px; text-align: center; }
+  .eyebrow {
+    display: inline-block; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid rgba(245,166,35,0.3); padding: 6px 12px; border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-size: clamp(40px, 7vw, 76px); line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 20px;
+    font-weight: 700;
+  }
+  h1 .accent { color: var(--accent); }
+  .hero p { max-width: 640px; margin: 0 auto 36px; font-size: 18px; color: var(--muted); }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: #0a0a0c;
+    font-weight: 600; font-size: 16px; padding: 14px 26px; border-radius: 10px; border: none; cursor: pointer;
+    box-shadow: var(--glow); transition: transform .15s ease, box-shadow .15s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(245,166,35,0.32); text-decoration: none; }
+  .btn-ghost {
+    background: transparent; color: var(--text); font-weight: 500; font-size: 16px;
+    padding: 14px 26px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--accent); text-decoration: none; }
+  .hero-meta { margin-top: 18px; font-size: 13px; color: var(--muted); }
+
+  .shot {
+    margin: 56px auto 0; max-width: 1040px;
+    border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), var(--glow);
+    background: var(--surface);
+  }
+  .shot img { width: 100%; height: auto; display: block; }
+  .shot-bar { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #2a2a30; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+
+  section { padding: 88px 0; }
+  section h2 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.02em; margin: 0 0 12px; font-weight: 700; }
+  section .lede { color: var(--muted); font-size: 17px; max-width: 620px; margin: 0 0 48px; }
+
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card .icon { width: 34px; height: 34px; border-radius: 8px; background: rgba(245,166,35,0.1); display: grid; place-items: center; margin-bottom: 14px; color: var(--accent); font-size: 16px; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+  .demo { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  @media (max-width: 820px) { .demo { grid-template-columns: 1fr; } }
+  .demo img { width: 100%; border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .demo ul { list-style: none; padding: 0; margin: 0; }
+  .demo li { padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 15px; display: flex; gap: 10px; }
+  .demo li::before { content: "·"; color: var(--accent); font-size: 22px; line-height: 1; }
+  .demo li:last-child { border-bottom: none; }
+
+  .cta-band {
+    text-align: center; padding: 80px 24px; border: 1px solid var(--line); border-radius: 16px;
+    background: linear-gradient(180deg, rgba(245,166,35,0.06), transparent);
+    margin: 0 24px;
+  }
+  .cta-band h2 { margin-bottom: 10px; }
+  .cta-band p { color: var(--muted); margin: 0 0 28px; }
+  .cta-band .note { font-size: 13px; color: var(--muted); margin-top: 16px; }
+
+  footer { padding: 48px 0 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  footer .inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container inner">
+    <div class="logo">
+      <div class="logo-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      FewNote
+    </div>
+    <a class="nav-cta" href="#download">Download for macOS</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <span class="eyebrow">Native macOS · no accounts · no analytics</span>
+    <h1>An ultra-lightweight notepad<br/>that <span class="accent">lights up like a matrix.</span></h1>
+    <p>Open it, type, close it. That's it. Every character is drawn dot by dot on a dim field — the text is never drawn, the dots are. Plain <code>.rtf</code> files in a plain folder, automatic saving, seven languages.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#download">↓ Download for macOS</a>
+      <a class="btn-ghost" href="#features">See features</a>
+    </div>
+    <div class="hero-meta">macOS 13+ · Apple Silicon &amp; Intel · ~2 MB</div>
+
+    <div class="shot">
+      <div class="shot-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+      <img src="assets/hero.png" alt="FewNote editor showing a note rendered in the dot matrix" loading="eager" />
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="container">
+    <h2>Nothing to learn. Nothing in the way.</h2>
+    <p class="lede">No syntax, no markers, nothing to interpret. What you type is what is saved — smart quotes and substitutions are off, so a <code>#</code> is a <code>#</code>.</p>
+    <div class="features">
+      <div class="card"><div class="icon">⦂</div><h3>A real dot matrix</h3><p>237 hand-built glyphs drawn dot by dot on a dim field — the way a Nothing-OS display lights up. <code>café</code>, <code>über</code>, <code>Kraków</code> all render as themselves.</p></div>
+      <div class="card"><div class="icon">⚡</div><h3>Instant writing</h3><p>The editor is live from the first moment. A wordmark greets an empty library and vanishes at the first keystroke; it never blocks typing.</p></div>
+      <div class="card"><div class="icon">Aa</div><h3>Styling that stays quiet</h3><p>Bold, italic, underline, strikethrough, lists and per-run colour from the Format menu or status bar. Stored as attributes — never as markup.</p></div>
+      <div class="card"><div class="icon">📁</div><h3>Notes are files</h3><p>Each note is a plain <code>.rtf</code> in a plain folder. Folders nest, notes and folders drag between them, and everything is yours on disk.</p></div>
+      <div class="card"><div class="icon">⌕</div><h3>Search everywhere</h3><p>A query searches every note, case- and accent-insensitively, and shows the line it was found on.</p></div>
+      <div class="card"><div class="icon">▶</div><h3>Typewriter replay</h3><p>Press play and the note is retyped cell by cell, silently, at a chosen pace.</p></div>
+      <div class="card"><div class="icon">🖼</div><h3>Save as Image</h3><p>Export a note as a PNG drawn through the same matrix the editor uses — dots, glow, colours and theme all in the picture.</p></div>
+      <div class="card"><div class="icon">◐</div><h3>Themes &amp; ink</h3><p>System, Light and Dark; six ink colours; text size from 30% to 150%. Preferences persist across launches.</p></div>
+      <div class="card"><div class="icon">🌐</div><h3>Seven languages</h3><p>English, Spanish, French, German, Portuguese, Italian, Dutch — following the Mac by default.</p></div>
+      <div class="card"><div class="icon">💾</div><h3>Automatic saving</h3><p>Edits debounced at 0.4 s and written to disk, flushed again on note switch, window close and quit. Nothing blocks typing.</p></div>
+      <div class="card"><div class="icon">✂</div><h3>Essential editing</h3><p>Selection, copy/paste, undo/redo, find bar (⌘F), spell checking, standard macOS shortcuts.</p></div>
+      <div class="card"><div class="icon">♿</div><h3>Respects your Mac</h3><p>Reduce Motion, Reduce Transparency and VoiceOver are honoured. Comfortable defaults out of the box.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container demo">
+    <div>
+      <h2>Watch the matrix light up.</h2>
+      <p class="lede">The dots, the glow, the colours — all live, all on the same field the editor draws on.</p>
+      <ul>
+        <li>Real dot matrix, not a font on a grid</li>
+        <li>Per-run colour and styling, stored as attributes</li>
+        <li>Export any note as a PNG of itself</li>
+        <li>Typewriter replay at a chosen pace</li>
+      </ul>
+    </div>
+    <img src="assets/demo.gif" alt="FewNote in action — animated demo of the dot-matrix editor" loading="lazy" />
+  </div>
+</section>
+
+<section id="download">
+  <div class="container">
+    <div class="cta-band">
+      <h2>Open it, type, close it.</h2>
+      <p>Free to download. No accounts, no analytics, no network access. Your notes stay on your disk.</p>
+      <!-- TODO: point this at the GitHub release DMG once publishing is set up -->
+      <a class="btn-primary" href="#">↓ Download FewNote for macOS</a>
+      <div class="note">macOS 13+ · Apple Silicon &amp; Intel · DMG coming soon</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container inner">
+    <span>© FewNote · Built with Swift &amp; SwiftUI</span>
+    <span><a href="#">Source</a> · <a href="#">Release notes</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
