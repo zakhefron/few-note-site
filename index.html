@@ -9,7 +9,8 @@
 <meta property="og:description" content="Open it, type, close it. Real dot-matrix text, plain .rtf files, no accounts, no analytics." />
 <meta property="og:image" content="assets/hero.png" />
 <meta property="og:type" content="website" />
-<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/appicon_32.png" />
+<link rel="icon" type="image/png" sizes="180x180" href="assets/appicon_256.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -81,7 +82,7 @@
   }
   nav .inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
   .logo { display: flex; align-items: center; gap: 11px; font-weight: 600; font-size: 17px; letter-spacing: -0.01em; color: var(--text); }
-  .logo img { width: 30px; height: 30px; border-radius: 8px; }
+  .logo img { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg-2); }
   .nav-cta {
     background: var(--text); color: var(--bg); font-weight: 600; font-size: 14px;
     padding: 9px 18px; border-radius: 9px; border: none; cursor: pointer;
@@ -228,7 +229,7 @@
 <nav>
   <div class="container inner">
     <a class="logo" href="#">
-      <img src="assets/logo.svg" alt="FewNote logo" />
+      <img src="assets/appicon_256.png" alt="FewNote logo" />
       FewNote
     </a>
     <a class="nav-cta" href="#download">Download</a>
@@ -402,8 +403,13 @@
     <div class="shortcuts">
       <div class="shortcut"><span>New note</span><kbd>⌘ N</kbd></div>
       <div class="shortcut"><span>Find in note</span><kbd>⌘ F</kbd></div>
-      <div class="shortcut"><span>Bold</span><kbd>⌘ B</kbd></div>
-      <div class="shortcut"><span>Italic</span><kbd>⌘ I</kbd></div>
+      <div class="shortcut"><span>Save as Image…</span><kbd>⌘ ⇧ E</kbd></div>
+      <div class="shortcut"><span>Replay note</span><kbd>⌘ R</kbd></div>
+      <div class="shortcut"><span>Full view</span><kbd>⌘ ⇧ F</kbd></div>
+      <div class="shortcut"><span>Show note list</span><kbd>⌘ ⌥ S</kbd></div>
+      <div class="shortcut"><span>Search notes</span><kbd>⌘ ⌥ F</kbd></div>
+      <div class="shortcut"><span>Bold / Italic / Underline</span><kbd>⌘ B / I / U</kbd></div>
+      <div class="shortcut"><span>Bulleted list</span><kbd>⌘ ⇧ L</kbd></div>
       <div class="shortcut"><span>Preferences</span><kbd>⌘ ,</kbd></div>
     </div>
   </div>
@@ -426,12 +432,7 @@
 
 <footer>
   <div class="container inner">
-    <span style="display:flex;align-items:center;gap:9px;"><img src="assets/logo.svg" alt="" style="width:18px;height:18px;border-radius:4px;" /> FewNote · Built with Swift &amp; SwiftUI</span>
-    <div class="links">
-      <a href="#">Source</a>
-      <a href="#">Release notes</a>
-      <a href="#">Contact</a>
-    </div>
+    <span style="display:flex;align-items:center;gap:9px;"><img src="assets/appicon_256.png" alt="" style="width:18px;height:18px;border-radius:4px;border:1px solid var(--line-2);" /> FewNote · Built with Swift &amp; SwiftUI on macOS</span>
   </div>
 </footer>
 
