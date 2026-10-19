@@ -455,8 +455,8 @@
 
       <div class="cli" style="margin-top: 14px;">
         <span class="cli-label">Or with Homebrew</span>
-        <pre>brew install --cask --no-quarantine zakhefron/tap/fewnote</pre>
-        <div class="cli-hint">Adds the FewNote tap and installs the app. <code>--no-quarantine</code> skips the Gatekeeper prompt since the build is unsigned.</div>
+        <pre>brew install --cask zakhefron/tap/fewnote && xattr -cr /Applications/FewNote.app</pre>
+        <div class="cli-hint">Installs FewNote via Homebrew, then clears the quarantine flag (Homebrew no longer supports <code>--no-quarantine</code>). The app is unsigned, so this one-time step lets it launch without Gatekeeper prompts.</div>
       </div>
     </div>
   </div>
