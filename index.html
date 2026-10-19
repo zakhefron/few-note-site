@@ -129,7 +129,7 @@
   .dot.y { background: #febc2e; }
   .dot.g { background: #28c840; }
   .shot-bar .title { margin-left: 12px; font-size: 12px; color: var(--paper); font-family: "JetBrains Mono", monospace; }
-  .shot img, .shot video { width: 100%; height: auto; display: block; background: #151518; }
+  .shot img { width: 100%; height: auto; display: block; }
 
   /* ---------- TICKER ---------- */
   .ticker { background: var(--ink); color: var(--paper); border-bottom: 3px solid var(--ink); overflow: hidden; }
@@ -469,10 +469,9 @@
       <div class="shot-frame">
         <div class="shot-bar">
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-          <span class="title">FewNote — 20 seconds in dots</span>
+          <span class="title">FewNote — demo</span>
         </div>
-        <video src="assets/cinematic.mp4" poster="assets/cinematic-poster.jpg" autoplay muted loop playsinline
-               alt="FewNote cinematic: the wordmark lights dot by dot, accent words land on a 3D dot plane, a dot ring becomes the app window, and a typewriter summons the one-line install"></video>
+        <img src="assets/demo.gif" alt="FewNote animated demo of the dot-matrix editor" loading="lazy" />
       </div>
     </div>
   </div>
