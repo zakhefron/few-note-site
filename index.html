@@ -204,6 +204,14 @@
   .cta-band h2 { margin-bottom: 12px; }
   .cta-band p { color: var(--muted); margin: 0 0 30px; font-size: 17px; max-width: 560px; margin-left: auto; margin-right: auto; }
   .cta-band .note { font-size: 13px; color: var(--muted-2); margin-top: 18px; }
+  .cli {
+    margin-top: 36px; text-align: left; max-width: 760px; margin-left: auto; margin-right: auto;
+    background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--radius-sm);
+    padding: 18px 20px; position: relative;
+  }
+  .cli .cli-label { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 10px; display: block; }
+  .cli pre { margin: 0; overflow-x: auto; font-family: "JetBrains Mono", monospace; font-size: 12.5px; line-height: 1.6; color: var(--text); white-space: pre; }
+  .cli .cli-hint { font-size: 12.5px; color: var(--muted); margin-top: 12px; }
 
   footer { padding: 56px 0 36px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; margin-top: 40px; }
   footer .inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; align-items: center; }
@@ -421,11 +429,23 @@
       <span class="section-eyebrow">Get FewNote</span>
       <h2>Open it, type, close it.</h2>
       <p>Free to download. No accounts, no analytics, no network access. Your notes stay on your disk, in plain files you can read with anything.</p>
-      <a class="btn-primary" href="#">
+      <!-- Download button points at the published GitHub release DMG -->
+      <a class="btn-primary" href="https://github.com/zakhefron/few-note/releases/download/v1.0/FewNote.dmg">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download for macOS
+        Download FewNote v1.0
       </a>
-      <div class="note">macOS 13+ · Apple Silicon &amp; Intel · DMG coming soon</div>
+      <div class="note">macOS 13+ · Apple Silicon &amp; Intel · 2.0 MB DMG</div>
+
+      <div class="cli">
+        <span class="cli-label">Or install from the terminal</span>
+        <pre>curl -L -o /tmp/FewNote.dmg https://github.com/zakhefron/few-note/releases/download/v1.0/FewNote.dmg
+hdiutil attach /tmp/FewNote.dmg -nobrowse
+cp -R /Volumes/FewNote/FewNote.app /Applications/
+hdiutil detach /Volumes/FewNote
+xattr -cr /Applications/FewNote.app
+open /Applications/FewNote.app</pre>
+        <div class="cli-hint">One paste installs FewNote to /Applications and clears the quarantine flag. No Homebrew required.</div>
+      </div>
     </div>
   </div>
 </section>
