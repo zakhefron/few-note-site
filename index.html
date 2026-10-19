@@ -437,9 +437,15 @@
       <div class="note">macOS 13+ · Apple Silicon &amp; Intel · 2.0 MB DMG</div>
 
       <div class="cli">
-        <span class="cli-label">Or install from the terminal</span>
-        <pre>curl -L -o /tmp/FewNote.dmg https://github.com/zakhefron/few-note/releases/download/v1.0/FewNote.dmg && hdiutil attach /tmp/FewNote.dmg -nobrowse && cp -R /Volumes/FewNote/FewNote.app /Applications/ && hdiutil detach /Volumes/FewNote && xattr -cr /Applications/FewNote.app && open /Applications/FewNote.app</pre>
-        <div class="cli-hint">One paste installs FewNote to /Applications and clears the quarantine flag. No Homebrew required.</div>
+        <span class="cli-label">Install in one line</span>
+        <pre>curl -fsSL https://raw.githubusercontent.com/zakhefron/few-note-site/main/install.sh | sh</pre>
+        <div class="cli-hint">Downloads, installs to /Applications, and launches FewNote. No Homebrew required.</div>
+      </div>
+
+      <div class="cli" style="margin-top: 14px;">
+        <span class="cli-label">Or with Homebrew</span>
+        <pre>brew install --cask --no-quarantine zakhefron/tap/fewnote</pre>
+        <div class="cli-hint">Adds the FewNote tap and installs the app. <code>--no-quarantine</code> skips the Gatekeeper prompt since the build is unsigned.</div>
       </div>
     </div>
   </div>
