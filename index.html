@@ -902,6 +902,7 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
 
   function resize(){
     const rect=canvas.parentElement.getBoundingClientRect();
+    if(rect.width<=0 || rect.height<=0){ requestAnimationFrame(resize); return; }
     const dpr=window.devicePixelRatio||1;
     canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
     canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
@@ -913,6 +914,7 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
   function render(){
     const rect=canvas.parentElement.getBoundingClientRect();
     const W=rect.width,H=rect.height;
+    if(W<=0 || H<=0) return;
     const p=pitch();
     const pad=14;
     ctx.clearRect(0,0,W,H);
@@ -979,6 +981,10 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
   input.addEventListener('keyup',render);
   input.addEventListener('click',render);
   window.addEventListener('resize',resize);
+  if('ResizeObserver' in window && wrap){
+    const ro=new ResizeObserver(()=>resize());
+    ro.observe(wrap);
+  }
   // animate caret
   function loop(){render();requestAnimationFrame(loop);}
   resize();
