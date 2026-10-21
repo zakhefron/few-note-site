@@ -86,6 +86,7 @@
     box-shadow: 0 0 12px var(--accent-glow);
   }
   html[data-theme="light"] #cursorTrail { mix-blend-mode: multiply; opacity: 0.35; }
+  @media (pointer: coarse) { #cursor, #cursorTrail { display: none !important; } body { cursor: auto; } }
   html[data-theme="light"] #cursor { mix-blend-mode: multiply; }
   #cursor.big { width: 46px; height: 46px; opacity: 0.35; }
 
@@ -770,8 +771,8 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
   let rx=x,ry=y;
   window.addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});
   function loop(){
-    x+=(tx-x)*0.30; y+=(ty-y)*0.30;
-    rx+=(tx-rx)*0.12; ry+=(ty-ry)*0.12;
+    x+=(tx-x)*0.26; y+=(ty-y)*0.26;
+    rx+=(tx-rx)*0.09; ry+=(ty-ry)*0.09;
     c.style.transform=`translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
     tr.style.transform=`translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`;
     requestAnimationFrame(loop);
@@ -968,7 +969,7 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
   }
   const wrap=document.getElementById('stageCanvasWrap');
   const box=document.querySelector('.stage-box');
-  function focusInput(){ input.focus(); }
+  function focusInput(){ input.focus(); try { const l=input.value.length; input.setSelectionRange(l,l); } catch(e){} }
   if(wrap){ wrap.addEventListener('click',focusInput); wrap.addEventListener('mouseenter',focusInput); }
   if(box){ box.addEventListener('mouseenter',focusInput); }
   // focus when stage scrolls into view
@@ -985,6 +986,7 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
     const ro=new ResizeObserver(()=>resize());
     ro.observe(wrap);
   }
+  try { const l=input.value.length; input.setSelectionRange(l,l); } catch(e){}
   // animate caret
   function loop(){render();requestAnimationFrame(loop);}
   resize();
