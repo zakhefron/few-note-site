@@ -197,7 +197,7 @@
     border: 1px solid var(--border); border-radius: 24px; overflow: hidden;
     background: linear-gradient(180deg, var(--panel), var(--bg-2));
     box-shadow: 0 0 0 1px var(--border), 0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(84,202,237,0.12);
-    display: grid; grid-template-columns: 1fr 1fr; min-height: 420px;
+    display: flex; flex-direction: column; min-height: 420px;
   }
   .stage-input {
     padding: 32px; border-right: 1px solid var(--border);
@@ -226,6 +226,17 @@
   .stage-canvas-wrap {
     position: relative; background: var(--bg); overflow: hidden;
     display: flex; align-items: center; justify-content: center; padding: 24px;
+    min-height: 360px;
+  }
+  .stage-hidden-input {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0; z-index: 2; resize: none; border: none; outline: none;
+    background: transparent; color: transparent; caret-color: transparent;
+    font-size: 16px; padding: 24px; font-family: var(--sans);
+  }
+  .stage-controls {
+    padding: 18px 24px; border-top: 1px solid var(--border);
+    background: var(--bg-2); display: flex; flex-direction: column; gap: 12px;
   }
   #stageCanvas { width: 100%; height: 100%; display: block; }
   .stage-hint {
@@ -475,9 +486,12 @@
       <p>This is the real matrix, running in your browser. Type on the left — every character is drawn dot by dot on the right, in the ink you pick. Bold, accents, everything the app does.</p>
     </div>
     <div class="stage-box reveal">
-      <div class="stage-input">
-        <label>your note</label>
-        <textarea class="stage-textarea" id="stageInput" placeholder="Start typing… the dots will keep up." spellcheck="false"></textarea>
+      <div class="stage-canvas-wrap" id="stageCanvasWrap" style="position:relative;cursor:text">
+        <canvas id="stageCanvas"></canvas>
+        <textarea id="stageInput" class="stage-hidden-input" placeholder="Start typing…" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+        <div class="stage-hint">dot matrix · live · click to type</div>
+      </div>
+      <div class="stage-controls">
         <div class="tint-row">
           <span>ink</span>
           <button class="tint-btn active" data-color="#ff802e" style="background:#ff802e;color:#ff802e" aria-label="ember"></button>
@@ -492,10 +506,6 @@
           <input type="range" id="stageSize" min="30" max="150" value="100" style="flex:1;accent-color:var(--accent)" />
           <span id="stageSizeLabel" style="min-width:40px;text-align:right">100%</span>
         </div>
-      </div>
-      <div class="stage-canvas-wrap">
-        <canvas id="stageCanvas"></canvas>
-        <div class="stage-hint">dot matrix · live</div>
       </div>
     </div>
   </div>
@@ -930,15 +940,33 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
       y0+=lineH;
     });
     ctx.shadowBlur=0;
-    // caret
-    const lastLine=lines[lines.length-1]||'';
-    const cx=p+lastLine.length*charW;
-    const cy=y0-lineH;
-    ctx.fillStyle=color;ctx.globalAlpha=0.7+0.3*Math.sin(Date.now()/200);
-    ctx.fillRect(cx,cy,2.6,8*p);
+    // caret at selection
+    const sel=input.selectionStart||0;
+    let idx=0; let caretX=p, caretY=p*2;
+    let li=0;
+    for(const ln of lines){
+      if(sel <= idx+ln.length){
+        const off=sel-idx;
+        caretX=p+off*charW;
+        caretY=p*2 + li*lineH;
+        break;
+      }
+      idx+=ln.length;
+      li++;
+    }
+    if(sel >= (input.value||'').length && lines.length>0){
+      // past end: place after last char
+    }
+    if(lines.length===0){caretX=p;caretY=p*2;}
+    ctx.fillStyle=color;ctx.globalAlpha=0.6+0.4*Math.abs(Math.sin(Date.now()/250));
+    ctx.fillRect(caretX,caretY,2.6,8*p);
     ctx.globalAlpha=1;
   }
+  const wrap=document.getElementById('stageCanvasWrap');
+  if(wrap){ wrap.addEventListener('click',()=>input.focus()); }
   input.addEventListener('input',render);
+  input.addEventListener('keyup',render);
+  input.addEventListener('click',render);
   window.addEventListener('resize',resize);
   // animate caret
   function loop(){render();requestAnimationFrame(loop);}
