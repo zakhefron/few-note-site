@@ -226,7 +226,7 @@
   .tint-btn.active { border-color: #fff; box-shadow: 0 0 14px currentColor; transform: scale(1.1); }
   .stage-canvas-wrap {
     position: relative; background: var(--bg); overflow: hidden;
-    display: flex; align-items: center; justify-content: center; padding: 16px;
+    display: flex; align-items: center; justify-content: center; padding: 0;
     min-height: 70px;
   }
   .stage-hidden-input {
@@ -914,6 +914,7 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
     const rect=canvas.parentElement.getBoundingClientRect();
     const W=rect.width,H=rect.height;
     const p=pitch();
+    const pad=14;
     ctx.clearRect(0,0,W,H);
     // background field
     const isLight=document.documentElement.getAttribute('data-theme')==='light';
@@ -924,15 +925,15 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
     const text=input.value||'';
     const charW=5*p+p;
     const lineH=8*p+p;
-    const cols=Math.floor((W-2*p)/charW);
+    const cols=Math.max(1,Math.floor((W-2*p-2*pad)/charW));
     const maxChars=cols*6;
     const slice=text.slice(0,maxChars);
     const lines=[];
     for(let i=0;i<slice.length;i+=cols)lines.push(slice.slice(i,i+cols));
-    let y0=p*2;
+    let y0=p*2+pad;
     ctx.shadowColor=color;ctx.shadowBlur=10;ctx.fillStyle=color;
     lines.forEach(line=>{
-      let x0=p;
+      let x0=p+pad;
       [...line].forEach(ch=>{
         const g=PARSED[ch]||PARSED['?'];
         g.forEach(([dc,dr])=>ctx.fillRect(x0+dc*p, y0+dr*p, 2.6, 2.6));
@@ -943,13 +944,13 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
     ctx.shadowBlur=0;
     // caret at selection
     const sel=input.selectionStart||0;
-    let idx=0; let caretX=p, caretY=p*2;
+    let idx=0; let caretX=p+pad, caretY=p*2+pad;
     let li=0;
     for(const ln of lines){
       if(sel <= idx+ln.length){
         const off=sel-idx;
-        caretX=p+off*charW;
-        caretY=p*2 + li*lineH;
+        caretX=p+pad+off*charW;
+        caretY=p*2+pad + li*lineH;
         break;
       }
       idx+=ln.length;
