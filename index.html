@@ -410,9 +410,9 @@
 
   @media (max-width: 860px) {
     .stage-head { grid-template-columns: 1fr; gap: 24px; }
-    .stage-box { grid-template-columns: 1fr; }
-    .stage-input { border-right: none; border-bottom: 1px solid var(--border); }
     .idea { grid-template-columns: 60px 1fr; }
+    .stage-controls { flex-direction: column; align-items: stretch; gap: 8px; }
+    .stage-controls .tint-row[style*="margin-left:auto"] { margin-left: 0 !important; }
     .idea p { grid-column: 2; }
     .closeup-grid { grid-template-columns: 1fr; }
     .index-row { grid-template-columns: 40px 1fr; }
