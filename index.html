@@ -71,12 +71,21 @@
 
   /* custom cursor */
   #cursor {
-    position: fixed; top: 0; left: 0; width: 14px; height: 14px; border-radius: 50%;
+    position: fixed; top: 0; left: 0; width: 12px; height: 12px; border-radius: 50%;
     background: var(--accent); pointer-events: none; z-index: 9999;
-    transform: translate(-50%, -50%); transition: width .25s ease, height .25s ease, background .3s, opacity .2s;
-    mix-blend-mode: screen; box-shadow: 0 0 18px var(--accent-glow);
+    transform: translate3d(-50%, -50%, 0); transition: width .18s ease, height .18s ease, background .3s, opacity .2s;
+    mix-blend-mode: screen; box-shadow: 0 0 16px var(--accent-glow), 0 0 4px var(--accent);
     will-change: transform; backface-visibility: hidden;
   }
+  #cursorTrail {
+    position: fixed; top: 0; left: 0; width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid var(--accent); pointer-events: none; z-index: 9998;
+    transform: translate3d(-50%, -50%, 0); opacity: 0.45;
+    transition: width .2s ease, height .2s ease, opacity .2s, border-color .3s;
+    will-change: transform; backface-visibility: hidden;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  html[data-theme="light"] #cursorTrail { mix-blend-mode: multiply; opacity: 0.35; }
   html[data-theme="light"] #cursor { mix-blend-mode: multiply; }
   #cursor.big { width: 46px; height: 46px; opacity: 0.35; }
 
@@ -409,6 +418,7 @@
 
 <canvas id="bgCanvas"></canvas>
 <div id="cursor"></div>
+<div id="cursorTrail"></div>
 
 <nav>
   <a class="logo" href="#">
@@ -476,6 +486,11 @@
           <button class="tint-btn" data-color="#ad8fff" style="background:#ad8fff;color:#ad8fff" aria-label="violet"></button>
           <button class="tint-btn" data-color="#ff708c" style="background:#ff708c;color:#ff708c" aria-label="rose"></button>
           <button class="tint-btn" data-color="#f2f5f7" style="background:#f2f5f7;color:#f2f5f7" aria-label="chalk"></button>
+        </div>
+        <div class="tint-row">
+          <span>size</span>
+          <input type="range" id="stageSize" min="30" max="150" value="100" style="flex:1;accent-color:var(--accent)" />
+          <span id="stageSizeLabel" style="min-width:40px;text-align:right">100%</span>
         </div>
       </div>
       <div class="stage-canvas-wrap">
@@ -739,13 +754,21 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
 /* ---------- custom cursor ---------- */
 (function(){
   const c=document.getElementById('cursor');
+  const tr=document.getElementById('cursorTrail');
   let x=window.innerWidth/2,y=window.innerHeight/2,tx=x,ty=y;
+  let rx=x,ry=y;
   window.addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});
-  function loop(){x+=(tx-x)*0.22;y+=(ty-y)*0.22;c.style.transform=`translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;requestAnimationFrame(loop);}
+  function loop(){
+    x+=(tx-x)*0.30; y+=(ty-y)*0.30;
+    rx+=(tx-rx)*0.12; ry+=(ty-ry)*0.12;
+    c.style.transform=`translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+    tr.style.transform=`translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  }
   loop();
-  document.querySelectorAll('a,button,textarea,.tint-btn').forEach(el=>{
-    el.addEventListener('mouseenter',()=>c.classList.add('big'));
-    el.addEventListener('mouseleave',()=>c.classList.remove('big'));
+  document.querySelectorAll('a,button,textarea,.tint-btn,input').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{c.classList.add('big');tr.style.opacity='0.15';});
+    el.addEventListener('mouseleave',()=>{c.classList.remove('big');tr.style.opacity='0.45';});
   });
 })();
 
@@ -860,6 +883,11 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
   let color='#ff802e';
   const tints=document.querySelectorAll('.tint-btn');
   tints.forEach(b=>b.addEventListener('click',()=>{tints.forEach(x=>x.classList.remove('active'));b.classList.add('active');color=b.dataset.color;}));
+  const sizeSlider=document.getElementById('stageSize');
+  const sizeLabel=document.getElementById('stageSizeLabel');
+  if(sizeSlider){
+    sizeSlider.addEventListener('input',()=>{sizePct=parseInt(sizeSlider.value);if(sizeLabel)sizeLabel.textContent=sizePct+'%';render();});
+  }
 
   function resize(){
     const rect=canvas.parentElement.getBoundingClientRect();
@@ -869,32 +897,34 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
     ctx.setTransform(dpr,0,0,dpr,0,0);
     render();
   }
-  const pitch=11;
+  let sizePct=100;
+  function pitch(){ return 11*(sizePct/100); }
   function render(){
     const rect=canvas.parentElement.getBoundingClientRect();
     const W=rect.width,H=rect.height;
+    const p=pitch();
     ctx.clearRect(0,0,W,H);
     // background field
     const isLight=document.documentElement.getAttribute('data-theme')==='light';
     const field=isLight?'rgba(0,0,0,0.12)':'rgba(255,255,255,0.10)';
     ctx.fillStyle=field;
-    for(let x=0;x<W;x+=pitch)for(let y=0;y<H;y+=pitch)ctx.fillRect(x,y,1.2,1.2);
+    for(let x=0;x<W;x+=p)for(let y=0;y<H;y+=p)ctx.fillRect(x,y,1.2,1.2);
     // text
     const text=input.value||'';
-    const charW=5*pitch+pitch;
-    const lineH=8*pitch+pitch;
-    const cols=Math.floor((W-2*pitch)/charW);
+    const charW=5*p+p;
+    const lineH=8*p+p;
+    const cols=Math.floor((W-2*p)/charW);
     const maxChars=cols*6;
     const slice=text.slice(0,maxChars);
     const lines=[];
     for(let i=0;i<slice.length;i+=cols)lines.push(slice.slice(i,i+cols));
-    let y0=pitch*2;
+    let y0=p*2;
     ctx.shadowColor=color;ctx.shadowBlur=10;ctx.fillStyle=color;
     lines.forEach(line=>{
-      let x0=pitch;
+      let x0=p;
       [...line].forEach(ch=>{
         const g=PARSED[ch]||PARSED['?'];
-        g.forEach(([dc,dr])=>ctx.fillRect(x0+dc*pitch, y0+dr*pitch, 2.6, 2.6));
+        g.forEach(([dc,dr])=>ctx.fillRect(x0+dc*p, y0+dr*p, 2.6, 2.6));
         x0+=charW;
       });
       y0+=lineH;
@@ -902,10 +932,10 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
     ctx.shadowBlur=0;
     // caret
     const lastLine=lines[lines.length-1]||'';
-    const cx=pitch+lastLine.length*charW;
+    const cx=p+lastLine.length*charW;
     const cy=y0-lineH;
     ctx.fillStyle=color;ctx.globalAlpha=0.7+0.3*Math.sin(Date.now()/200);
-    ctx.fillRect(cx,cy,2.6,8*pitch);
+    ctx.fillRect(cx,cy,2.6,8*p);
     ctx.globalAlpha=1;
   }
   input.addEventListener('input',render);
