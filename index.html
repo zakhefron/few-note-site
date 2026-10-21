@@ -175,6 +175,55 @@
   .scroll-hint::after { content: ""; width: 1px; height: 36px; background: linear-gradient(to bottom, var(--accent), transparent); animation: scrollLine 2s ease-in-out infinite; }
   @keyframes scrollLine { 0%,100% { transform: scaleY(0.4); transform-origin: top; } 50% { transform: scaleY(1); } }
 
+  /* ---------- INTERACTIVE STAGE ---------- */
+  .stage { padding: 140px 0; position: relative; }
+  .stage-head { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: end; margin-bottom: 60px; }
+  .stage-head h2 {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: clamp(40px, 5.5vw, 76px); line-height: 1; letter-spacing: -0.02em;
+  }
+  .stage-head h2 .accent { color: var(--ink-ice); font-style: normal; font-family: var(--sans); font-weight: 700; font-size: 0.5em; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+  .stage-head p { color: var(--text-soft); font-size: 17px; line-height: 1.6; max-width: 460px; }
+  .stage-box {
+    border: 1px solid var(--border); border-radius: 24px; overflow: hidden;
+    background: linear-gradient(180deg, var(--panel), var(--bg-2));
+    box-shadow: 0 0 0 1px var(--border), 0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(84,202,237,0.12);
+    display: grid; grid-template-columns: 1fr 1fr; min-height: 420px;
+  }
+  .stage-input {
+    padding: 32px; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .stage-input label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-dim); display: flex; align-items: center; gap: 8px;
+  }
+  .stage-input label::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-ice); box-shadow: 0 0 8px var(--ink-ice); }
+  .stage-textarea {
+    flex: 1; background: transparent; border: none; outline: none; resize: none;
+    color: var(--text); font-family: var(--sans); font-size: 18px; line-height: 1.5;
+    caret-color: var(--ink-ice);
+  }
+  .stage-textarea::placeholder { color: var(--text-dim); }
+  .tint-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .tint-row span { font-family: var(--mono); font-size: 10.5px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-right: 4px; }
+  .tint-btn {
+    width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent;
+    cursor: pointer; transition: transform .15s, border-color .15s, box-shadow .15s;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+  .tint-btn:hover { transform: scale(1.15); }
+  .tint-btn.active { border-color: #fff; box-shadow: 0 0 14px currentColor; transform: scale(1.1); }
+  .stage-canvas-wrap {
+    position: relative; background: var(--bg); overflow: hidden;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  #stageCanvas { width: 100%; height: 100%; display: block; }
+  .stage-hint {
+    position: absolute; bottom: 16px; right: 20px;
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
   /* ---------- THREE IDEAS ---------- */
   .ideas { padding: 120px 0; }
   .idea {
@@ -338,6 +387,9 @@
   @media (prefers-reduced-motion: reduce) { .reveal, .reveal-stagger > * { opacity: 1; transform: none; transition: none; } }
 
   @media (max-width: 860px) {
+    .stage-head { grid-template-columns: 1fr; gap: 24px; }
+    .stage-box { grid-template-columns: 1fr; }
+    .stage-input { border-right: none; border-bottom: 1px solid var(--border); }
     .idea { grid-template-columns: 60px 1fr; }
     .idea p { grid-column: 2; }
     .closeup-grid { grid-template-columns: 1fr; }
@@ -364,7 +416,7 @@
     FewNote
   </a>
   <div class="nav-links">
-    <a href="app.html">Try it</a>
+    <a href="#stage">Try it</a>
     <a href="#ideas">Ideas</a>
     <a href="#features">Features</a>
     <a href="#install">Install</a>
@@ -392,7 +444,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20 14 20 14 14 20 14"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Install for macOS
       </a>
-      <a class="btn btn-ghost" href="app.html">Try it</a>
+      <a class="btn btn-ghost" href="#stage">Try it</a>
       <a class="btn btn-ghost" href="https://github.com/zakhefron/few-note" target="_blank" rel="noopener">Source on GitHub</a>
     </div>
     <div class="hero-meta">
@@ -404,6 +456,35 @@
   </div>
   <div class="scroll-hint">scroll</div>
 </header>
+
+<!-- ---------- INTERACTIVE STAGE ---------- -->
+<section class="stage" id="stage">
+  <div class="container">
+    <div class="stage-head reveal">
+      <h2>Type here.<br/>Watch it <span class="accent">light up.</span></h2>
+      <p>This is the real matrix, running in your browser. Type on the left — every character is drawn dot by dot on the right, in the ink you pick. Bold, accents, everything the app does.</p>
+    </div>
+    <div class="stage-box reveal">
+      <div class="stage-input">
+        <label>your note</label>
+        <textarea class="stage-textarea" id="stageInput" placeholder="Start typing… the dots will keep up." spellcheck="false"></textarea>
+        <div class="tint-row">
+          <span>ink</span>
+          <button class="tint-btn active" data-color="#ff802e" style="background:#ff802e;color:#ff802e" aria-label="ember"></button>
+          <button class="tint-btn" data-color="#54caed" style="background:#54caed;color:#54caed" aria-label="ice"></button>
+          <button class="tint-btn" data-color="#a8e333" style="background:#a8e333;color:#a8e333" aria-label="lime"></button>
+          <button class="tint-btn" data-color="#ad8fff" style="background:#ad8fff;color:#ad8fff" aria-label="violet"></button>
+          <button class="tint-btn" data-color="#ff708c" style="background:#ff708c;color:#ff708c" aria-label="rose"></button>
+          <button class="tint-btn" data-color="#f2f5f7" style="background:#f2f5f7;color:#f2f5f7" aria-label="chalk"></button>
+        </div>
+      </div>
+      <div class="stage-canvas-wrap">
+        <canvas id="stageCanvas"></canvas>
+        <div class="stage-hint">dot matrix · live</div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ---------- THREE IDEAS ---------- -->
 <section class="ideas" id="ideas">
@@ -769,6 +850,70 @@ for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
   requestAnimationFrame(tick);
   const obs=new MutationObserver(draw);
   obs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+
+/* ---------- interactive stage ---------- */
+(function(){
+  const canvas=document.getElementById('stageCanvas');
+  const ctx=canvas.getContext('2d');
+  const input=document.getElementById('stageInput');
+  let color='#ff802e';
+  const tints=document.querySelectorAll('.tint-btn');
+  tints.forEach(b=>b.addEventListener('click',()=>{tints.forEach(x=>x.classList.remove('active'));b.classList.add('active');color=b.dataset.color;}));
+
+  function resize(){
+    const rect=canvas.parentElement.getBoundingClientRect();
+    const dpr=window.devicePixelRatio||1;
+    canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+    canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    render();
+  }
+  const pitch=11;
+  function render(){
+    const rect=canvas.parentElement.getBoundingClientRect();
+    const W=rect.width,H=rect.height;
+    ctx.clearRect(0,0,W,H);
+    // background field
+    const isLight=document.documentElement.getAttribute('data-theme')==='light';
+    const field=isLight?'rgba(0,0,0,0.12)':'rgba(255,255,255,0.10)';
+    ctx.fillStyle=field;
+    for(let x=0;x<W;x+=pitch)for(let y=0;y<H;y+=pitch)ctx.fillRect(x,y,1.2,1.2);
+    // text
+    const text=input.value||'';
+    const charW=5*pitch+pitch;
+    const lineH=8*pitch+pitch;
+    const cols=Math.floor((W-2*pitch)/charW);
+    const maxChars=cols*6;
+    const slice=text.slice(0,maxChars);
+    const lines=[];
+    for(let i=0;i<slice.length;i+=cols)lines.push(slice.slice(i,i+cols));
+    let y0=pitch*2;
+    ctx.shadowColor=color;ctx.shadowBlur=10;ctx.fillStyle=color;
+    lines.forEach(line=>{
+      let x0=pitch;
+      [...line].forEach(ch=>{
+        const g=PARSED[ch]||PARSED['?'];
+        g.forEach(([dc,dr])=>ctx.fillRect(x0+dc*pitch, y0+dr*pitch, 2.6, 2.6));
+        x0+=charW;
+      });
+      y0+=lineH;
+    });
+    ctx.shadowBlur=0;
+    // caret
+    const lastLine=lines[lines.length-1]||'';
+    const cx=pitch+lastLine.length*charW;
+    const cy=y0-lineH;
+    ctx.fillStyle=color;ctx.globalAlpha=0.7+0.3*Math.sin(Date.now()/200);
+    ctx.fillRect(cx,cy,2.6,8*pitch);
+    ctx.globalAlpha=1;
+  }
+  input.addEventListener('input',render);
+  window.addEventListener('resize',resize);
+  // animate caret
+  function loop(){render();requestAnimationFrame(loop);}
+  resize();
+  requestAnimationFrame(loop);
 })();
 
 /* ---------- reveal on scroll ---------- */
