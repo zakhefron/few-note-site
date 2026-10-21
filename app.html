@@ -111,6 +111,7 @@
   /* toast */
   .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 16px; font-size:13px; z-index:100; opacity:0; transition:opacity .3s; pointer-events:none; }
   .toast.show { opacity:1; }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
 <body>
@@ -143,6 +144,7 @@
         <button class="icon-btn" id="fullViewBtn" title="Full view (⇧⌘F)"> ( ) </button>
         <button class="icon-btn" id="exportBtn" title="Save as Image (⇧⌘E)">↓</button>
         <button class="icon-btn" id="themeBtn" title="Appearance">◐</button>
+        <select id="langSelect" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:4px 6px;font-size:11px;font-family:var(--mono)"></select>
       </div>
     </div>
     <div class="content">
@@ -168,6 +170,10 @@
       <!-- editor -->
       <div class="view" id="editorView">
         <div class="editor-view">
+          <div id="editorWelcome" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;z-index:3;opacity:0;transition:opacity .3s">
+            <canvas id="editorWelcomeWm" width="120" height="60"></canvas>
+            <div style="font-family:var(--serif);font-style:italic;font-size:20px;color:var(--text-soft)" id="editorWelcomeText"></div>
+          </div>
           <div class="editor-canvas-wrap" id="editorWrap">
             <canvas id="editorCanvas"></canvas>
             <div class="editor-content" id="editorContent" contenteditable="true" spellcheck="true"></div>
@@ -182,6 +188,7 @@
               <input type="range" min="0.1" max="1" step="0.05" value="1" id="replaySpeed" style="width:80px" />
               <button id="replayStop">■</button>
             </div>
+            <button id="fullViewExit" style="position:absolute;top:8px;right:8px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;display:none;z-index:5" title="Leave full view (⇧⌘F)">↘</button>
           </div>
         </div>
       </div>
@@ -273,6 +280,68 @@ function parseGlyph(g){const dots=[];const rows=g.split('/');rows.forEach((r,ri)
 const PARSED={};
 for(const k in GLYPHS) PARSED[k]=parseGlyph(GLYPHS[k]);
 
+/* ---------- i18n ---------- */
+const LANGS=['en','es','fr','de','pt','it','nl'];
+const TRANSLATIONS={
+en:{newNote:'New note',newFolder:'New folder',search:'Search notes',toggleSidebar:'Toggle sidebar',
+bold:'Bold',italic:'Italic',underline:'Underline',strike:'Strikethrough',bullet:'Bulleted list',
+replay:'Replay note',fullView:'Full view',export:'Save as Image',theme:'Appearance',size:'Text size',
+welcomeTitle:'A quiet place to put things down.',welcomeSub:'Start typing whenever you like — the dots will keep up.',
+notesRoot:'Notes',trash:'Trash',folderEmpty:'Empty. Press ⌘N to start a note.',
+newNoteToast:'New note',movedTrash:'Moved to Trash',restored:'Restored',savedImage:'Saved as image',
+nothingReplay:'Nothing to replay',notFound:'Not found',themeLabel:'Theme', dateCreated:'Created', dateModified:'Modified',
+lang:'Language',namePrompt:'What should we call you?',nameSub:'A name — or a pet name — for the greeting on the way in.'},
+es:{newNote:'Nueva nota',newFolder:'Nueva carpeta',search:'Buscar notas',toggleSidebar:'Mostrar/ocultar lista',
+bold:'Negrita',italic:'Cursiva',underline:'Subrayado',strike:'Tachado',bullet:'Lista con viñetas',
+replay:'Reproducir nota',fullView:'Vista completa',export:'Guardar como imagen',theme:'Apariencia',size:'Tamaño de texto',
+welcomeTitle:'Un lugar tranquilo para anotar.',welcomeSub:'Empieza a escribir cuando quieras — los puntos te seguirán.',
+notesRoot:'Notas',trash:'Papelera',folderEmpty:'Vacío. Pulsa ⌘N para empezar una nota.',
+newNoteToast:'Nueva nota',movedTrash:'Movido a la papelera',restored:'Restaurado',savedImage:'Guardado como imagen',
+nothingReplay:'Nada que reproducir',notFound:'No encontrado',themeLabel:'Tema',dateCreated:'Creado',dateModified:'Modificado',
+lang:'Idioma',namePrompt:'¿Cómo te llamamos?',nameSub:'Un nombre para el saludo de bienvenida.'},
+fr:{newNote:'Nouvelle note',newFolder:'Nouveau dossier',search:'Rechercher des notes',toggleSidebar:'Afficher/masquer la liste',
+bold:'Gras',italic:'Italique',underline:'Souligné',strike:'Barré',bullet:'Liste à puces',
+replay:'Relire la note',fullView:'Vue complète',export:'Enregistrer en image',theme:'Apparence',size:'Taille du texte',
+welcomeTitle:'Un endroit calme pour poser les choses.',welcomeSub:'Commencez à écrire quand vous voulez — les points suivront.',
+notesRoot:'Notes',trash:'Corbeille',folderEmpty:'Vide. Appuyez sur ⌘N pour commencer une note.',
+newNoteToast:'Nouvelle note',movedTrash:'Déplacé dans la corbeille',restored:'Restauré',savedImage:'Enregistré en image',
+nothingReplay:'Rien à relire',notFound:'Introuvable',themeLabel:'Thème',dateCreated:'Créé',dateModified:'Modifié',
+lang:'Langue',namePrompt:'Comment vous appeler ?',nameSub:'Un nom pour le salut d’accueil.'},
+de:{newNote:'Neue Notiz',newFolder:'Neuer Ordner',search:'Notizen suchen',toggleSidebar:'Liste ein/aus',
+bold:'Fett',italic:'Kursiv',underline:'Unterstrichen',strike:'Durchgestrichen',bullet:'Aufzählung',
+replay:'Notiz abspielen',fullView:'Vollbild',export:'Als Bild speichern',theme:'Erscheinungsbild',size:'Textgröße',
+welcomeTitle:'Ein ruhiger Ort, um Dinge festzuhalten.',welcomeSub:'Schreiben Sie los, wann Sie wollen — die Punkte folgen.',
+notesRoot:'Notizen',trash:'Papierkorb',folderEmpty:'Leer. ⌘N für eine neue Notiz.',
+newNoteToast:'Neue Notiz',movedTrash:'In den Papierkorb verschoben',restored:'Wiederhergestellt',savedImage:'Als Bild gespeichert',
+nothingReplay:'Nichts abzuspielen',notFound:'Nicht gefunden',themeLabel:'Thema',dateCreated:'Erstellt',dateModified:'Geändert',
+lang:'Sprache',namePrompt:'Wie sollen wir Sie nennen?',nameSub:'Ein Name für die Begrüßung.'},
+pt:{newNote:'Nova nota',newFolder:'Nova pasta',search:'Buscar notas',toggleSidebar:'Mostrar/ocultar lista',
+bold:'Negrito',italic:'Itálico',underline:'Sublinhado',strike:'Tachado',bullet:'Lista com marcadores',
+replay:'Reproduzir nota',fullView:'Tela cheia',export:'Salvar como imagem',theme:'Aparência',size:'Tamanho do texto',
+welcomeTitle:'Um lugar tranquilo para anotar.',welcomeSub:'Comece a escrever quando quiser — os pontos acompanham.',
+notesRoot:'Notas',trash:'Lixeira',folderEmpty:'Vazio. Pressione ⌘N para começar uma nota.',
+newNoteToast:'Nova nota',movedTrash:'Movido para a lixeira',restored:'Restaurado',savedImage:'Salvo como imagem',
+nothingReplay:'Nada para reproduzir',notFound:'Não encontrado',themeLabel:'Tema',dateCreated:'Criado',dateModified:'Modificado',
+lang:'Idioma',namePrompt:'Como devemos chamá-lo?',nameSub:'Um nome para a saudação.'},
+it:{newNote:'Nuova nota',newFolder:'Nuova cartella',search:'Cerca note',toggleSidebar:'Mostra/nascondi elenco',
+bold:'Grassetto',italic:'Corsivo',underline:'Sottolineato',strike:'Barrato',bullet:'Elenco puntato',
+replay:'Riproduci nota',fullView:'Schermo intero',export:'Salva come immagine',theme:'Aspetto',size:'Dimensione testo',
+welcomeTitle:'Un posto tranquillo per annotare.',welcomeSub:'Inizia a scrivere quando vuoi — i punti ti seguono.',
+notesRoot:'Note',trash:'Cestino',folderEmpty:'Vuoto. Premi ⌘N per iniziare una nota.',
+newNoteToast:'Nuova nota',movedTrash:'Spostato nel cestino',restored:'Ripristinato',savedImage:'Salvato come immagine',
+nothingReplay:'Niente da riprodurre',notFound:'Non trovato',themeLabel:'Tema',dateCreated:'Creato',dateModified:'Modificato',
+lang:'Lingua',namePrompt:'Come ti chiamiamo?',nameSub:'Un nome per il saluto.'},
+nl:{newNote:'Nieuwe notitie',newFolder:'Nieuwe map',search:'Notities zoeken',toggleSidebar:'Lijst tonen/verbergen',
+bold:'Vet',italic:'Cursief',underline:'Onderstrepen',strike:'Doorstrepen',bullet:'Opsomming',
+replay:'Notitie afspelen',fullView:'Volledig scherm',export:'Opslaan als afbeelding',theme:'Uiterlijk',size:'Tekengrootte',
+welcomeTitle:'Een rustige plek om dingen neer te zetten.',welcomeSub:'Begin te typen wanneer je wilt — de punten volgen.',
+notesRoot:'Notities',trash:'Prullenbak',folderEmpty:'Leeg. Druk op ⌘N om een notitie te beginnen.',
+newNoteToast:'Nieuwe notitie',movedTrash:'Verplaatst naar prullenbak',restored:'Hersteld',savedImage:'Opgeslagen als afbeelding',
+nothingReplay:'Niets af te spelen',notFound:'Niet gevonden',themeLabel:'Thema',dateCreated:'Aangemaakt',dateModified:'Gewijzigd',
+lang:'Taal',namePrompt:'Hoe noemen we je?',nameSub:'Een naam voor de begroeting.'},
+};
+function t(key){const lang=TRANSLATIONS[state.language]||TRANSLATIONS.en;return (lang[key]!==undefined?lang[key]:TRANSLATIONS.en[key])||key;}
+
 /* ---------- state ---------- */
 const STORAGE_KEY='fewnote-web-state';
 let state={
@@ -281,6 +350,8 @@ let state={
   textSize:100,
   sidebarVisible:true,
   fullView:false,
+  language:'en',
+  userName:'',
   notes:[],        // {id,title,content(html),created,modified,folderId,trashed}
   folders:[],      // {id,name,parentId}
   trash:[],        // note ids
@@ -359,6 +430,7 @@ function renderTree(){
     actions.append(a1,a2,a3,a4);
     node.append(chev,name,actions);
     node.onclick=()=>{state.openFolders[f.id]=!expanded; state.browsingFolderId=f.id; state.selectedNoteId=null; render(); showFolder(f.id); saveState();};
+    node.ondblclick=(e)=>{e.stopPropagation();renameFolder(f.id);};
     node.ondragover=(e)=>{e.preventDefault();node.style.background='rgba(84,202,237,0.15)';};
     node.ondragleave=()=>{node.style.background='';};
     node.ondrop=(e)=>{e.preventDefault();node.style.background='';handleDrop(e,f.id);};
@@ -377,7 +449,7 @@ function renderTree(){
   rootNode.className='tree-node';
   if(state.browsingFolderId===null && !state.selectedNoteId) rootNode.classList.add('selected');
   const chev=document.createElement('span'); chev.className='chev open'; chev.textContent='▶';
-  const name=document.createElement('span'); name.className='name'; name.textContent='Notes';
+  const name=document.createElement('span'); name.className='name'; name.textContent=t('notesRoot');
   const actions=document.createElement('span'); actions.className='actions';
   const a1=document.createElement('button'); a1.className='act'; a1.textContent='+'; a1.title='New note';
   a1.onclick=(e)=>{e.stopPropagation();createNote(null);};
@@ -394,7 +466,7 @@ function renderTree(){
   childrenFolders(null).forEach(f=>ch.append(folderNode(f,1)));
   const trashNode=document.createElement('div'); trashNode.className='tree-node';
   if(state.browsingFolderId==='__trash__') trashNode.classList.add('selected');
-  const tname=document.createElement('span'); tname.className='name'; tname.textContent='Trash ('+state.trash.length+')';
+  const tname=document.createElement('span'); tname.className='name'; tname.textContent=t('trash')+' ('+state.trash.length+')';
   trashNode.append(document.createElement('span'),tname);
   trashNode.style.opacity='0.7';
   trashNode.onclick=()=>{state.browsingFolderId='__trash__';state.selectedNoteId=null;render();showTrash();saveState();};
@@ -405,11 +477,16 @@ function renderTree(){
 
 /* ---------- actions ---------- */
 function createNote(folderId){
+  // refuse while the current draft is still empty, like the app
+  if(state.selectedNoteId){
+    const cur=noteById(state.selectedNoteId);
+    if(cur && isDraft(cur)){ toast(t('newNoteToast')); editorContent.focus(); return; }
+  }
   const n={id:uid(),title:'Untitled',content:'',created:Date.now(),modified:Date.now(),folderId:folderId||null,trashed:false};
   state.notes.push(n);
   state.selectedNoteId=n.id;
   state.browsingFolderId=null;
-  saveState(); render(); showEditor(); toast('New note');
+  saveState(); render(); showEditor(); toast(t('newNoteToast'));
 }
 function createFolder(parentId){
   const name=prompt('Folder name:','New Folder');
@@ -445,14 +522,14 @@ function handleDrop(e,targetFolderId){
     n.folderId=targetFolderId; n.modified=Date.now();
     // title update
     n.title=noteTitle(n);
-    saveState(); render(); toast('Moved note');
+    saveState(); render(); toast(t('newNoteToast'));
     if(state.selectedNoteId===n.id) {} // keep editor
   } else if(data.type==='folder'){
     const f=folderById(data.id); if(!f) return;
     if(data.id===targetFolderId) return;
     // prevent moving into own descendant
     f.parentId=targetFolderId;
-    saveState(); render(); toast('Moved folder');
+    saveState(); render(); toast(t('newNoteToast'));
   }
 }
 function deleteNote(id){
@@ -460,12 +537,12 @@ function deleteNote(id){
   n.trashed=true; n.modified=Date.now();
   state.trash.push(n.id);
   if(state.selectedNoteId===id){state.selectedNoteId=null;}
-  saveState(); render(); showFolder(state.browsingFolderId); toast('Moved to Trash');
+  saveState(); render(); showFolder(state.browsingFolderId); toast(t('movedTrash'));
 }
 function restoreNote(id){
   const n=noteById(id); if(!n) return;
   n.trashed=false; state.trash=state.trash.filter(x=>x!==id);
-  saveState(); render(); showTrash(); toast('Restored');
+  saveState(); render(); showTrash(); toast(t('restored'));
 }
 function permDelete(id){
   state.notes=state.notes.filter(n=>n.id!==id);
@@ -538,7 +615,7 @@ function renderFolderCards(folderId){
     cards.append(c);
   });
   if(cards.children.length===0){
-    cards.innerHTML='<div style="color:var(--text-dim);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">Empty. Press ⌘N to start a note.</div>';
+    cards.innerHTML='<div style="color:var(--text-dim);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">'+t('folderEmpty')+'</div>';
   }
 }
 function renderTrashCards(){
@@ -801,7 +878,14 @@ function renderEditor2(){
     y0+=lineH;
   });
 }
-
+  const ew=document.getElementById('editorWelcome');
+  if(ew){
+    const tmp=document.createElement('div');tmp.innerHTML=editorContent.innerHTML;
+    const empty=(tmp.textContent||'').trim()==='';
+    ew.style.opacity=empty?'1':'0';
+    const ewt=document.getElementById('editorWelcomeText'); if(ewt) ewt.textContent=t('welcomeTitle');
+    if(empty) drawEditorWelcomeWm();
+  }
 /* editor input handling */
 let saveTimer=null;
 function scheduleSave(){
@@ -909,12 +993,17 @@ sizeSlider.oninput=()=>{
   saveState(); renderEditor2();
 };
 
+/* language selector */
+const langSelect=document.getElementById('langSelect');
+LANGS.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l.toUpperCase();if(l===state.language)o.selected=true;langSelect.append(o);});
+langSelect.onchange=()=>{state.language=langSelect.value;saveState();applyTranslations();toast(t('lang')+': '+state.language.toUpperCase());};
+
 /* theme toggle */
 document.getElementById('themeBtn').onclick=()=>{
   const order=['system','light','dark'];
   const idx=order.indexOf(state.theme);
   state.theme=order[(idx+1)%order.length];
-  applyTheme(); saveState(); refreshTintPickerColors(); renderEditor2(); toast('Theme: '+state.theme);
+  applyTheme(); saveState(); refreshTintPickerColors(); renderEditor2(); toast(t('themeLabel')+': '+state.theme);
 };
 
 /* sidebar toggle */
@@ -962,11 +1051,14 @@ function openSearch(){
 }
 
 /* full view */
-document.getElementById('fullViewBtn').onclick=()=>{
+document.getElementById('fullViewBtn').onclick=toggleFullView;
+document.getElementById('fullViewExit').onclick=toggleFullView;
+function toggleFullView(){
   state.fullView=!state.fullView;
   document.getElementById('app').classList.toggle('fullview',state.fullView);
+  document.getElementById('fullViewExit').style.display=state.fullView?'block':'none';
   saveState();
-};
+}
 
 /* export image */
 document.getElementById('exportBtn').onclick=exportImage;
@@ -975,7 +1067,11 @@ function exportImage(){
   const segs=segmentsFromDOM(editorContent);
   const chars=[]; segs.forEach(s=>{for(const ch of s.text) chars.push({ch,style:s});});
   const charW=5*editorPitch+editorPitch; const lineH=8*editorPitch+editorPitch;
-  const cols=60;
+  // hug content width
+  let maxLine=0,curLen=0;
+  chars.forEach(c=>{if(c.ch==='\n'){maxLine=Math.max(maxLine,curLen);curLen=0;}else curLen++;});
+  maxLine=Math.max(maxLine,curLen);
+  const cols=Math.max(1,Math.min(80,maxLine||1));
   const lines=[]; let cur=[]; let col=0;
   chars.forEach(c=>{if(c.ch==='\n'){lines.push(cur);cur=[];col=0;return;} if(col>=cols){lines.push(cur);cur=[];col=0;} cur.push(c); col++;});
   if(cur.length) lines.push(cur);
@@ -1003,7 +1099,7 @@ function exportImage(){
     y0+=lineH;
   });
   const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download='fewnote.png'; a.click();
-  toast('Saved as image');
+  toast(t('savedImage'));
 }
 
 /* replay */
@@ -1014,7 +1110,7 @@ function startReplay(){
   const n=noteById(state.selectedNoteId); if(!n) return;
   const tmp=document.createElement('div'); tmp.innerHTML=editorContent.innerHTML;
   replaySourceText=tmp.textContent||'';
-  if(!replaySourceText.trim()){toast('Nothing to replay');return;}
+  if(!replaySourceText.trim()){toast(t('nothingReplay'));return;}
   isReplaying=true;
   document.getElementById('replayBadge').classList.add('show');
   // snapshot current content
@@ -1067,7 +1163,7 @@ function doFind(dir){
   const text=tmp.textContent||'';
   const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   const nq=norm(q), nt=norm(text);
-  if(!nt.includes(nq)){toast('Not found');return;}
+  if(!nt.includes(nq)){toast(t('notFound'));return;}
   // find from current
   let start=highlightRange? highlightRange.start : 0;
   let i;
@@ -1082,6 +1178,7 @@ document.getElementById('findInput').addEventListener('keydown',(e)=>{if(e.key==
 
 /* keyboard shortcuts */
 document.addEventListener('keydown',(e)=>{
+  if(e.key==='Escape' && isReplaying){ stopReplay(); return; }
   if(e.target===editorContent) {
     if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='b'){e.preventDefault();document.getElementById('boldBtn').click();}
     if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='i'){e.preventDefault();document.getElementById('italicBtn').click();}
@@ -1097,6 +1194,29 @@ document.addEventListener('keydown',(e)=>{
 
 /* date label click handled in updateDateLabel */
 
+function drawEditorWelcomeWm(){
+  const canvas=document.getElementById('editorWelcomeWm');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const text=['Few','Note'];
+  const spacing=6,dot=3.6;
+  const charW=5*spacing+spacing,lineH=8*spacing+spacing;
+  let maxCols=0;text.forEach(l=>{maxCols=Math.max(maxCols,l.length*charW-spacing);});
+  const w=maxCols,h=text.length*lineH-spacing;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';
+  ctx.scale(dpr,dpr);
+  const c=currentInkColor();
+  text.forEach((line,li)=>{
+    const lineW=line.length*charW-spacing;const x0=(w-lineW)/2;const y0=li*lineH;
+    [...line].forEach((ch,ci)=>{
+      const g=PARSED[ch]||[];const cx=x0+ci*charW;
+      ctx.shadowColor=c;ctx.shadowBlur=10;ctx.fillStyle=c;
+      g.forEach(([dc,dr])=>ctx.fillRect(cx+dc*spacing,y0+dr*spacing,dot,dot));
+    });
+  });
+  ctx.shadowBlur=0;
+}
 /* welcome wordmark */
 function drawWelcomeWordmark(){
   const canvas=document.getElementById('welcomeWordmark');
@@ -1122,16 +1242,44 @@ function drawWelcomeWordmark(){
   ctx.shadowBlur=0;
 }
 
+function applyTranslations(){
+  document.getElementById('toggleSidebar').title=t('toggleSidebar');
+  document.getElementById('newNoteBtn').title=t('newNote');
+  document.getElementById('newFolderBtn').title=t('newFolder');
+  document.getElementById('searchBtn').title=t('search');
+  document.getElementById('boldBtn').title=t('bold');
+  document.getElementById('italicBtn').title=t('italic');
+  document.getElementById('underlineBtn').title=t('underline');
+  document.getElementById('strikeBtn').title=t('strike');
+  document.getElementById('bulletBtn').title=t('bullet');
+  document.getElementById('replayBtn').title=t('replay');
+  document.getElementById('fullViewBtn').title=t('fullView');
+  document.getElementById('exportBtn').title=t('export');
+  document.getElementById('themeBtn').title=t('theme');
+  document.getElementById('sizeSlider').title=t('size');
+  document.getElementById('langSelect').title=t('lang');
+  const w=document.querySelector('.welcome h2'); if(w) w.textContent=state.userName? ('Hello, '+state.userName+'.') : t('welcomeTitle');
+  const ws=document.querySelector('.welcome p'); if(ws) ws.textContent=state.userName? t('welcomeSub') : t('welcomeSub');
+  const wf=document.querySelector('.welcome p:last-of-type'); 
+  // folder empty handled in renderFolderCards
+  drawWelcomeWordmark();
+}
 /* render dispatcher */
 function render(){
   renderTree();
-  // apply sidebar visibility
   document.getElementById('app').classList.toggle('sidebar-hidden',!state.sidebarVisible);
   document.getElementById('app').classList.toggle('fullview',state.fullView);
+  const fx=document.getElementById('fullViewExit'); if(fx) fx.style.display=state.fullView?'block':'none';
+  applyTranslations();
 }
 function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* boot */
+// name prompt on first run
+if(!state.userName){
+  const n=prompt(t('namePrompt')+'\n'+t('nameSub'));
+  if(n!==null){ state.userName=n.trim(); saveState(); }
+}
 render();
 if(state.selectedNoteId){ showEditor(); }
 else if(state.browsingFolderId==='__trash__'){ showTrash(); }
