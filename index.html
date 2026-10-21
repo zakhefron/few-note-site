@@ -411,9 +411,12 @@
   @media (max-width: 860px) {
     .stage-head { grid-template-columns: 1fr; gap: 24px; }
     .idea { grid-template-columns: 60px 1fr; }
-    .stage-controls { flex-direction: row; align-items: center; gap: 8px; flex-wrap: nowrap; overflow-x: auto; }
+    .stage-controls { flex-direction: row; align-items: center; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding: 6px 10px; }
     .stage-controls .tint-row { flex-shrink: 0; }
     .stage-controls .tint-row[style*="margin-left:auto"] { margin-left: auto !important; flex: 1 1 auto; min-width: 0; }
+    .stage-controls .tint-dot { width: 16px; height: 16px; }
+    .stage-controls .tint-row span { font-size: 9px; }
+    .stage-controls input[type="range"] { min-width: 50px; }
     .idea p { grid-column: 2; }
     .closeup-grid { grid-template-columns: 1fr; }
     .index-row { grid-template-columns: 40px 1fr; }
