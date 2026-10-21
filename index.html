@@ -411,8 +411,9 @@
   @media (max-width: 860px) {
     .stage-head { grid-template-columns: 1fr; gap: 24px; }
     .idea { grid-template-columns: 60px 1fr; }
-    .stage-controls { flex-direction: row; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .stage-controls .tint-row[style*="margin-left:auto"] { margin-left: auto !important; }
+    .stage-controls { flex-direction: row; align-items: center; gap: 8px; flex-wrap: nowrap; overflow-x: auto; }
+    .stage-controls .tint-row { flex-shrink: 0; }
+    .stage-controls .tint-row[style*="margin-left:auto"] { margin-left: auto !important; flex: 1 1 auto; min-width: 0; }
     .idea p { grid-column: 2; }
     .closeup-grid { grid-template-columns: 1fr; }
     .index-row { grid-template-columns: 40px 1fr; }
